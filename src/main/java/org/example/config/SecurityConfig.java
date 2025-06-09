@@ -9,7 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity; // 5.x için doğru anotasyon
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; // Doğru anotasyon
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,11 +17,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher; // Spring Security 6+ için gerekli
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true) // @PreAuthorize gibi anotasyonları etkinleştirir
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
@@ -58,20 +58,17 @@ public class SecurityConfig {
         return jwtFilter;
     }
 
-
-    // Güvenlik filtre zincirini yapılandırma (Spring Security 5.x Lambda DSL)
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // CSRF için Lambda DSL
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Session Management için Lambda DSL
-            .authorizeRequests(authorize -> authorize // authorizeRequests için Lambda DSL
-                .antMatchers("/api/auth/**").permitAll() // antMatchers hala kullanılıyor
-                .antMatchers(HttpMethod.GET, "/api/users/doctors").permitAll() // antMatchers hala kullanılıyor
+            .csrf(csrf -> csrf.disable()) // CSRF korumasını devre dışı bırak
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Oturumları stateless yap
+            .authorizeHttpRequests(authorize -> authorize // Spring Boot 3.x (Spring Security 6) standardı
+                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/**")).permitAll()
+                .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/appointments/doctors")).permitAll() // Örneğin, doktor listesi herkes için açık
                 .anyRequest().authenticated()
             );
 
-        // JWT Kimlik Doğrulama Filtresini UsernamePasswordAuthenticationFilter'dan önce ekle
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import javax.validation.Valid; // javax.validation yerine jakarta.validation kullanın
+import jakarta.validation.Valid; // javax.validation yerine jakarta.validation kullanın
 import org.example.dto.request.AppointmentCreateRequest;
 import org.example.dto.request.AppointmentStatusUpdateRequest;
 import org.example.dto.request.DoctorNoteRequest;

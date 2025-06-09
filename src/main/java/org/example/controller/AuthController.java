@@ -13,7 +13,7 @@ import org.example.dto.request.LoginRequest;
 import org.example.dto.response.AuthResponse;
 import org.example.dto.request.UserRegistrationRequest;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.example.enums.Role;
 import org.example.exception.BadRequestException;

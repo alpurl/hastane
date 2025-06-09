@@ -1,10 +1,8 @@
 package org.example.model;
 
-import javax.persistence.Entity;
-
 import org.example.enums.Role;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;

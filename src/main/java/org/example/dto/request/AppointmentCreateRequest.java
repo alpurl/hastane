@@ -2,7 +2,7 @@ package org.example.dto.request;
 
 // request/AppointmentCreateRequest.java
 import lombok.Data;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
