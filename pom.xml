@@ -23,6 +23,12 @@
     </parent>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -80,6 +86,19 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
+        <!-- PostgreSQL JDBC Driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+         <!-- MapStruct Core -->
+    <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>1.5.5.Final</version> <!-- En güncel versiyonu kontrol edin -->
+    </dependency>
 
     </dependencies>
 
@@ -90,6 +109,36 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version> <!-- Maven sürümünüze göre kontrol edin -->
+            <configuration>
+                <annotationProcessorPaths>
+                    <path>
+                        <groupId>org.mapstruct</groupId>
+                        <artifactId>mapstruct-processor</artifactId>
+                        <version>1.5.5.Final</version> <!-- MapStruct core versiyonu ile aynı olmalı -->
+                    </path>
+                    <path>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                        <version>${lombok.version}</version> <!-- Eğer Lombok kullanıyorsanız -->
+                    </path>
+                    <path>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok-mapstruct-binding</artifactId>
+                        <version>0.2.0</version> <!-- Eğer Lombok kullanıyorsanız -->
+                    </path>
+                </annotationProcessorPaths>
+                <compilerArgs>
+                    <compilerArg>
+                        -Amapstruct.defaultComponentModel=spring <!-- Spring bileşeni olarak MapStruct mappers'ı enjekte eder -->
+                    </compilerArg>
+                </compilerArgs>
+            </configuration>
+        </plugin>
         </plugins>
     </build>
 
