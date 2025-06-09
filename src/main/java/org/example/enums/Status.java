@@ -3,5 +3,6 @@ package org.example.enums;
 public enum Status {
     BEKLEMEDE,
     ONAYLANDI,
-    REDDEDILDI
+    REDDEDILDI,
+    TAMAMLANDI // Randevu bittikten sonra not eklenince vb.
 }

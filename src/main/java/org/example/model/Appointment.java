@@ -8,10 +8,11 @@ import org.example.enums.Status;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "appointments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 public class Appointment {
 
     @Id
@@ -19,17 +20,30 @@ public class Appointment {
     private Long id; // Her randevunun benzersiz ID’si
 
     @ManyToOne
+    @JoinColumn(name = "patient_id", nullable = false)
     private User patient; // Randevuyu alan hasta
 
     @ManyToOne
+    @JoinColumn(name = "doctor_id", nullable = false)
     private User doctor; // Randevuyu alan doktora ait
 
-    private LocalDateTime dateTime; // Randevu tarihi ve saati
+    @Column(nullable = false)
+    private LocalDateTime appointmentDateTime;// Randevu tarihi ve saati
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Status status; // Randevunun durumu: BEKLEMEDE, ONAYLANDI, REDDEDILDI
 
-    private String note; // Doktorun randevuya eklediği not
+    @Column(columnDefinition = "TEXT") // Daha uzun metinler için
+    private String doctorNotes; // Doktorun randevuya eklediği not
 
     // getter ve setter metotları
+
+    // Randevu oluşturulurken varsayılan status
+    @PrePersist
+    protected void onCreate() {
+        if (status == null) {
+            status = Status.BEKLEMEDE;
+        }
+    }
 }
