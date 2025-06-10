@@ -5,12 +5,12 @@ import org.example.model.User;
 import org.example.repository.AppointmentRepository;
 import org.example.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.example.enums.Status;
+import org.example.enums.Status; // Enum paketinizin doğru olduğundan emin olun
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.example.enums.Role;
+import org.example.enums.Role; // Enum paketinizin doğru olduğundan emin olun
 import org.example.exception.BadRequestException;
 import org.example.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +23,7 @@ public class AppointmentService {
     private final UserRepository userRepository;
 
     // Constructor Injection ile bağımlılıkları enjekte ediyoruz
+    // Bu servis, DTO dönüşümünü Controller'a bırakır, bu yüzden mapper'ı burada enjekte etmiyoruz.
     public AppointmentService(AppointmentRepository appointmentRepository, UserRepository userRepository) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
@@ -35,7 +36,7 @@ public class AppointmentService {
      * @param patientId   Randevuyu alan hastanın ID'si
      * @param doctorId    Randevunun alındığı doktorun ID'si
      * @param dateTime    Randevunun tarih ve saati
-     * @return Oluşturulan Appointment nesnesi
+     * @return Oluşturulan Appointment nesnesi (Entity olarak dönüyor)
      * @throws ResourceNotFoundException Hasta veya doktor bulunamazsa
      * @throws BadRequestException       Roller uygun değilse veya randevu çakışması varsa
      */
@@ -68,7 +69,7 @@ public class AppointmentService {
         Appointment appt = new Appointment();
         appt.setPatient(patient);
         appt.setDoctor(doctor);
-        appt.setAppointmentDateTime(dateTime); // LocalDateTime alanının adı AppointmentDateTime olarak güncellendi
+        appt.setAppointmentDateTime(dateTime);
         appt.setStatus(Status.BEKLEMEDE); // Varsayılan durum "Beklemede"
 
         return appointmentRepository.save(appt);
@@ -80,7 +81,7 @@ public class AppointmentService {
      * Bu metot sadece hastanın kendi geçmiş randevularını görebilmesini sağlamak için kullanılır.
      *
      * @param patientId Geçmiş randevuları istenen hastanın ID'si
-     * @return Hastanın geçmiş randevularının listesi
+     * @return Hastanın geçmiş randevularının listesi (Entity olarak dönüyor)
      * @throws ResourceNotFoundException Hasta bulunamazsa
      * @throws BadRequestException       Belirtilen ID'nin hasta rolünde değilse
     */
@@ -95,13 +96,13 @@ public class AppointmentService {
         // Randevu tarihine göre filtreleme de eklenebilir, şimdilik sadece hastaya göre listeler
         // ve veritabanı sorgusunda sıralama yapar.
         return appointmentRepository.findByPatientIdOrderByAppointmentDateTimeDesc(patientId);
-    } 
+    }
 
     /**
      * Belirli bir doktorun tüm randevularını listeler (Beklemede, Onaylandı, Reddedildi, Tamamlandı).
      *
      * @param doctorId Randevuları istenen doktorun ID'si
-     * @return Doktorun tüm randevularının listesi
+     * @return Doktorun tüm randevularının listesi (Entity olarak dönüyor)
      * @throws ResourceNotFoundException Doktor bulunamazsa
      * @throws BadRequestException       Belirtilen ID'nin doktor rolünde değilse
     */
@@ -113,13 +114,13 @@ public class AppointmentService {
             throw new BadRequestException("ID " + doctorId + " bir doktor değil.");
         }
         return appointmentRepository.findByDoctorIdOrderByAppointmentDateTimeAsc(doctorId);
-    } 
+    }
 
     /**
      * Belirli bir doktorun beklemede olan randevu taleplerini listeler.
      *
      * @param doctorId Randevu talepleri istenen doktorun ID'si
-     * @return Doktorun beklemede olan randevu taleplerinin listesi
+     * @return Doktorun beklemede olan randevu taleplerinin listesi (Entity olarak dönüyor)
      * @throws ResourceNotFoundException Doktor bulunamazsa
      * @throws BadRequestException       Belirtilen ID'nin doktor rolünde değilse
      */
@@ -140,12 +141,13 @@ public class AppointmentService {
      * @param appointmentId Güncellenecek randevunun ID'si
      * @param doctorId      Güncelleme yapan doktorun ID'si (yetki kontrolü için)
      * @param newStatus     Yeni durum
-     * @return Güncellenen Appointment nesnesi
+     * @return Güncellenen Appointment nesnesi (Entity olarak dönüyor)
      * @throws ResourceNotFoundException Randevu bulunamazsa
      * @throws BadRequestException       Yetkilendirme sorunları veya geçersiz durum geçişi varsa
      */
     @Transactional
-    public Appointment updateStatus(Long appointmentId, Long doctorId, Status newStatus) {
+    // Metod adı 'updateStatus' yerine 'updateAppointmentStatus' olarak değiştirildi
+    public Appointment updateAppointmentStatus(Long appointmentId, Long doctorId, Status newStatus) { // <-- Metod adı DÜZELTİLDİ
         Appointment appt = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Randevu bulunamadı: " + appointmentId));
 
@@ -181,7 +183,7 @@ public class AppointmentService {
      * @param appointmentId Not eklenecek randevunun ID'si
      * @param doctorId      Notu ekleyen doktorun ID'si (yetki kontrolü için)
      * @param note          Eklenecek not metni
-     * @return Güncellenen Appointment nesnesi
+     * @return Güncellenen Appointment nesnesi (Entity olarak dönüyor)
      * @throws ResourceNotFoundException Randevu bulunamazsa
      * @throws BadRequestException       Yetkilendirme sorunları veya randevu durumu not eklemeye uygun değilse
      */
@@ -200,7 +202,7 @@ public class AppointmentService {
             throw new BadRequestException("Sadece onaylanmış veya tamamlanmış randevulara not eklenebilir.");
         }
 
-        appt.setDoctorNotes(note); // Not alanı setDoctorNotes olarak güncellendi
+        appt.setDoctorNotes(note);
 
         // Eğer randevu onaylı durumdaysa, not eklendikten sonra 'Tamamlandı' durumuna çekilebilir
         if (appt.getStatus() == Status.ONAYLANDI) {
@@ -216,7 +218,7 @@ public class AppointmentService {
      * Yetkilendirme (sadece ilgili hasta veya doktor görebilir) Controller katmanında veya burada yapılabilir.
      *
      * @param appointmentId Randevunun ID'si
-     * @return Randevu nesnesi
+     * @return Randevu nesnesi (Entity olarak dönüyor)
      * @throws ResourceNotFoundException Randevu bulunamazsa
      */
     public Appointment getAppointmentById(Long appointmentId) {
@@ -224,4 +226,3 @@ public class AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Randevu bulunamadı: " + appointmentId));
     }
 }
-

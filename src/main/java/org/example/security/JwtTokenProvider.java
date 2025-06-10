@@ -1,8 +1,8 @@
 package org.example.security;
 
-import io.jsonwebtoken.*; // io.jsonwebtoken kütüphanesini eklemeniz gerekecek (pom.xml'e bakınız)
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys; // security modülü için
+import io.jsonwebtoken.security.Keys;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,47 +12,55 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
-import org.example.security.UserPrincipal;
-
-
+import java.util.HashMap; // Claims eklemek için
+import java.util.Map;     // Claims eklemek için
+import org.example.security.UserPrincipal; // UserPrincipal sınıfınızı import edin
 
 @Component
 public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    // application.properties dosyasından okunacak JWT gizli anahtarı
     @Value("${app.jwtSecret}")
     private String jwtSecret;
 
-    // application.properties dosyasından okunacak JWT geçerlilik süresi (ms cinsinden)
     @Value("${app.jwtExpirationInMs}")
     private int jwtExpirationInMs;
 
-    // JWT'yi oluşturmak için kullanılacak anahtarı döndürür
     private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
     /**
      * Kimlik doğrulanmış bir kullanıcıdan JWT token oluşturur.
+     * Kullanıcı rolü ve ID'si JWT payload'ına claim olarak eklenir.
      *
      * @param authentication Spring Security Authentication nesnesi
      * @return Oluşturulan JWT token (String)
      */
-    public String generateToken(Authentication authentication) {
-        // authentication.getPrincipal() metodu UserPrincipal objesini döndürmelidir
+public String generateToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userPrincipal.getId());
+        // BURADAKİ SATIRI DÜZELTİN: "ROLE_" önekini ekleyin
+        claims.put("role", "ROLE_" + userPrincipal.getRole().name()); // <-- DEĞİŞİKLİK BURADA!
+
+        // Eğer UserPrincipal'ınızda firstName, lastName, specialty gibi ek bilgiler varsa onları da buraya ekleyebilirsiniz:
+        // claims.put("firstName", userPrincipal.getFirstName());
+        // claims.put("lastName", userPrincipal.getLastName());
+        // claims.put("specialty", userPrincipal.getSpecialty());
+
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername()) // Token'ın kime ait olduğunu belirtir (kullanıcı adı)
-                .setIssuedAt(new Date()) // Token'ın ne zaman oluşturulduğu
-                .setExpiration(expiryDate) // Token'ın son kullanma tarihi
-                .signWith(key(), SignatureAlgorithm.HS512) // Token'ı imzalamak için kullanılan anahtar ve algoritma
-                .compact(); // Token'ı bir String'e dönüştürür
+                .setClaims(claims) // Oluşturulan custom claim'leri ekle
+                .setSubject(userPrincipal.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(expiryDate)
+                .signWith(key(), SignatureAlgorithm.HS512)
+                .compact();
     }
 
     /**

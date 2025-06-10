@@ -99,11 +99,17 @@
         </dependency>
 
          <!-- MapStruct Core -->
-    <dependency>
-        <groupId>org.mapstruct</groupId>
-        <artifactId>mapstruct</artifactId>
-        <version>1.5.5.Final</version> <!-- En güncel versiyonu kontrol edin -->
-    </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.5.5.Final</version> <!-- Uyumlu versiyonu kullanın -->
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>1.5.5.Final</version> <!-- mapstruct ile aynı versiyon -->
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
 

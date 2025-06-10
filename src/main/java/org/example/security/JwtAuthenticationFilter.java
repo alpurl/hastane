@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// Bu sınıfta @Component veya @Order anotasyonları YOK!
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
@@ -22,8 +23,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtTokenProvider tokenProvider;
     private CustomUserDetailsService customUserDetailsService;
 
-    // Setter Injection kullanıyoruz çünkü filtreler Spring context'te doğrudan @Autowired ile inject edilemez.
-    // SecurityConfig'te set edeceğiz.
+    // Parametresiz constructor
+    public JwtAuthenticationFilter() {
+        // Spring Boot tarafından bean olarak oluşturulurken bu constructor çağrılabilir
+    }
+
+    // Setter Injection metotları (SecurityConfig'te bağımlılıkları set etmek için)
     public void setJwtTokenProvider(JwtTokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
     }
@@ -56,12 +61,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // HTTP Request başlığından JWT token'ı çıkaran yardımcı metot
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // "Bearer " kısmını atla
+            return bearerToken.substring(7);
         }
         return null;
     }
-}
+}   
